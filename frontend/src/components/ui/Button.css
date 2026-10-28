@@ -1,0 +1,134 @@
+
+.ui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.ui-button svg {
+  flex-shrink: 0;
+}
+
+.ui-button:focus-visible {
+  outline: 2px solid #a59bff;
+  outline-offset: 3px;
+}
+
+.ui-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Sizes */
+
+.ui-button--small {
+  min-height: 34px;
+  padding: 7px 12px;
+  font-size: 12px;
+}
+
+.ui-button--medium {
+  min-height: 42px;
+  padding: 10px 16px;
+}
+
+.ui-button--large {
+  min-height: 50px;
+  padding: 13px 20px;
+  font-size: 15px;
+}
+
+/* Primary */
+
+.ui-button--primary {
+  background: #7c6cff;
+  color: #ffffff;
+}
+
+.ui-button--primary:hover:not(:disabled) {
+  background: #6b5be7;
+  transform: translateY(-1px);
+}
+
+/* Secondary */
+
+.ui-button--secondary {
+  border-color: #354158;
+  background: #151c2b;
+  color: #e2e8f0;
+}
+
+.ui-button--secondary:hover:not(:disabled) {
+  border-color: #64748b;
+  background: #1e293b;
+}
+
+/* Danger */
+
+.ui-button--danger {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.ui-button--danger:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+/* Ghost */
+
+.ui-button--ghost {
+  background: transparent;
+  color: #94a3b8;
+}
+
+.ui-button--ghost:hover:not(:disabled) {
+  background: #1e293b;
+  color: #f1f5f9;
+}
+
+/* Full width */
+
+.ui-button--full {
+  width: 100%;
+}
+
+/* Loading spinner */
+
+.ui-button__spinner {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: ui-button-spin 0.7s linear infinite;
+}
+
+@keyframes ui-button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-button,
+  .ui-button__spinner {
+    animation: none;
+    transition: none;
+  }
+}

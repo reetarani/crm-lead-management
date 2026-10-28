@@ -1,0 +1,70 @@
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.status-badge__dot {
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* New */
+
+.status-badge--new {
+  border-color: rgba(96, 165, 250, 0.2);
+  background: rgba(96, 165, 250, 0.1);
+  color: #60a5fa;
+}
+
+/* Contacted */
+
+.status-badge--contacted {
+  border-color: rgba(251, 191, 36, 0.2);
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+}
+
+/* Qualified */
+
+.status-badge--qualified {
+  border-color: rgba(167, 139, 250, 0.2);
+  background: rgba(167, 139, 250, 0.1);
+  color: #a78bfa;
+}
+
+/* Converted */
+
+.status-badge--converted {
+  border-color: rgba(52, 211, 153, 0.2);
+  background: rgba(52, 211, 153, 0.1);
+  color: #34d399;
+}
+
+/* Lost */
+
+.status-badge--lost {
+  border-color: rgba(248, 113, 113, 0.2);
+  background: rgba(248, 113, 113, 0.1);
+  color: #f87171;
+}
+
+/* Unknown or custom status */
+
+.status-badge--default {
+  border-color: #354158;
+  background: #1e293b;
+  color: #cbd5e1;
+}

@@ -1,0 +1,46 @@
+
+/* Lead Form Page */
+
+.lead-form-page {
+  width: 100%;
+}
+
+/* Form container spacing */
+.lead-form-page__container {
+  width: 100%;
+  max-width: 1000px;
+  margin: 28px auto 0;
+}
+
+/* Error message */
+.lead-form-page__error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0;
+  padding: 14px 16px;
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Responsive layout */
+@media (max-width: 768px) {
+  .lead-form-page__container {
+    margin-top: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lead-form-page__container {
+    margin-top: 16px;
+  }
+
+  .lead-form-page__error {
+    padding: 12px;
+    font-size: 12px;
+  }
+}
