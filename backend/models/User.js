@@ -36,6 +36,30 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    // Increment to invalidate existing access tokens
+    tokenVersion: {
+      type: Number,
+      default: 0,
+    },
+
+    // Password reset fields
+    passwordResetTokenHash: {
+      type: String,
+      default: null,
+      select: false,
+    },
+
+    passwordResetExpiresAt: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+
+    passwordChangedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

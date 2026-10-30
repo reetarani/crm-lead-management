@@ -8,63 +8,69 @@ import {
   useState,
 } from "react";
 
-import api from "../services/api";
+import api, { setAccessToken } from "../services/api";
 
 const AuthContext = createContext(null);
 
+// Prevent duplicate refresh requests during React StrictMode initialization.
+let sessionRestorePromise = null;
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-
-  const [token, setToken] = useState(
-    () => sessionStorage.getItem("crm_token")
-  );
-
+  const [token, setToken] = useState(null);
   const [isInitializing, setIsInitializing] = useState(true);
 
-  // Restore the authenticated user when the application loads.
+  // Restore the session using the HttpOnly refresh cookie.
   useEffect(() => {
     let cancelled = false;
 
     const restoreSession = async () => {
-      const savedToken = sessionStorage.getItem("crm_token");
-
-      if (!savedToken) {
-        setToken(null);
-        setUser(null);
-        setIsInitializing(false);
-        return;
-      }
-
-      setToken(savedToken);
-
       try {
-        const response = await api.get("/auth/me");
+        if (!sessionRestorePromise) {
+          sessionRestorePromise = (async () => {
+            const refreshResponse = await api.post("/auth/refresh");
 
-        // Support common API response formats.
-        const restoredUser =
-          response.data?.user ??
-          response.data?.data ??
-          response.data;
+            const accessToken = refreshResponse.data?.token;
 
-        if (
-          !restoredUser ||
-          typeof restoredUser !== "object" ||
-          !restoredUser.username ||
-          !restoredUser.role
-        ) {
-          throw new Error("Invalid user profile response.");
+            if (!accessToken) {
+              throw new Error("Access token was not returned.");
+            }
+
+            setAccessToken(accessToken);
+
+            const profileResponse = await api.get("/auth/me");
+
+            const restoredUser = profileResponse.data?.user;
+
+            if (
+              !restoredUser ||
+              !restoredUser.username ||
+              !restoredUser.role
+            ) {
+              throw new Error("Invalid user profile response.");
+            }
+
+            return {
+              user: restoredUser,
+              token: accessToken,
+            };
+          })().finally(() => {
+            sessionRestorePromise = null;
+          });
         }
 
+        const session = await sessionRestorePromise;
+
         if (!cancelled) {
-          setUser(restoredUser);
-          setToken(savedToken);
+          setUser(session.user);
+          setToken(session.token);
         }
-      } catch {
+      } catch (error) {
+        setAccessToken(null);
+
         if (!cancelled) {
-          // Invalid or expired token: clear the session.
-          sessionStorage.removeItem("crm_token");
-          setToken(null);
           setUser(null);
+          setToken(null);
         }
       } finally {
         if (!cancelled) {
@@ -80,18 +86,45 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // Login: receive the user first, then the token.
+  // Clear the frontend session when automatic refresh fails.
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      setAccessToken(null);
+      setToken(null);
+      setUser(null);
+    };
+
+    window.addEventListener(
+      "crm:session-expired",
+      handleSessionExpired
+    );
+
+    return () => {
+      window.removeEventListener(
+        "crm:session-expired",
+        handleSessionExpired
+      );
+    };
+  }, []);
+
+  // Login: keep the access token in memory only.
   const login = useCallback((userData, accessToken) => {
-    sessionStorage.setItem("crm_token", accessToken);
+    setAccessToken(accessToken);
     setToken(accessToken);
     setUser(userData);
   }, []);
 
-  // Logout: clear the stored session.
-  const logout = useCallback(() => {
-    sessionStorage.removeItem("crm_token");
-    setToken(null);
-    setUser(null);
+  // Logout: revoke the backend refresh session.
+  const logout = useCallback(async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch (error) {
+      console.error("Logout request failed:", error);
+    } finally {
+      setAccessToken(null);
+      setToken(null);
+      setUser(null);
+    }
   }, []);
 
   const contextValue = useMemo(

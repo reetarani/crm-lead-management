@@ -13,7 +13,7 @@ export const authenticate = async (req, res, next) => {
       });
     }
 
-    const token = authHeader.split(" ")[1];
+    const token = authHeader.slice(7).trim();
 
     if (!token) {
       return res.status(401).json({
@@ -22,7 +22,26 @@ export const authenticate = async (req, res, next) => {
       });
     }
 
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is not configured");
+
+      return res.status(500).json({
+        success: false,
+        message: "Authentication service is unavailable",
+      });
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (
+      !decoded.sub ||
+      !Number.isInteger(decoded.ver)
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid authentication token",
+      });
+    }
 
     const user = await User.findById(decoded.sub);
 
@@ -30,6 +49,14 @@ export const authenticate = async (req, res, next) => {
       return res.status(401).json({
         success: false,
         message: "Invalid or inactive user",
+      });
+    }
+
+    // Check whether the token has been invalidated.
+    if (decoded.ver !== user.tokenVersion) {
+      return res.status(401).json({
+        success: false,
+        message: "Session expired. Please log in again.",
       });
     }
 

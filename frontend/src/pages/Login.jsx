@@ -1,7 +1,15 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Layers, Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import {
+  Layers,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
+} from "lucide-react";
+
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import "./Login.css";
@@ -15,6 +23,7 @@ export default function Login() {
     password: "",
   });
 
+  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -47,6 +56,7 @@ export default function Login() {
       const response = await api.post("/auth/login", {
         email,
         password: formData.password,
+        rememberMe,
       });
 
       const { token, user } = response.data;
@@ -55,10 +65,8 @@ export default function Login() {
         throw new Error("Invalid login response from server.");
       }
 
-      // Save authentication using your AuthContext.
       login(user, token);
 
-      // Open the protected dashboard.
       navigate("/dashboard", { replace: true });
     } catch (err) {
       const status = err.response?.status;
@@ -85,6 +93,7 @@ export default function Login() {
   return (
     <main className="login-page">
       <div className="login-container">
+
         {/* Brand */}
         <div className="login-brand">
           <span className="login-brand-icon">
@@ -108,6 +117,7 @@ export default function Login() {
           </div>
 
           <form className="login-form" onSubmit={handleSubmit}>
+
             {/* Email */}
             <div className="login-field">
               <label htmlFor="email">Email address</label>
@@ -179,7 +189,30 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Error message */}
+            {/* Remember Me and Forgot Password */}
+            <div className="login-options">
+              <label className="remember-me">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(event) =>
+                    setRememberMe(event.target.checked)
+                  }
+                  disabled={loading}
+                />
+
+                <span>Remember me</span>
+              </label>
+
+              <Link
+                to="/forgot-password"
+                className="forgot-password-link"
+              >
+                Forgot password?
+              </Link>
+            </div>
+
+            {/* Error */}
             {error && (
               <div className="login-error" role="alert">
                 {error}
@@ -202,7 +235,10 @@ export default function Login() {
 
           <div className="login-security-note">
             <Lock size={14} />
-            <span>Your account is protected with secure authentication.</span>
+
+            <span>
+              Your account is protected with secure authentication.
+            </span>
           </div>
         </section>
 
@@ -210,6 +246,7 @@ export default function Login() {
         <footer className="login-footer">
           © 2026 CRM. All rights reserved.
         </footer>
+
       </div>
     </main>
   );
