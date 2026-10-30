@@ -1,0 +1,129 @@
+
+.trash-page {
+  padding: 28px;
+  color: #e5e7eb;
+}
+
+.trash-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.trash-toolbar input {
+  width: min(100%, 380px);
+  padding: 12px 16px;
+  background: #111827;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  color: #f8fafc;
+  outline: none;
+}
+
+.trash-toolbar span {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.trash-table-wrapper {
+  overflow-x: auto;
+  background: #111827;
+  border: 1px solid #293548;
+  border-radius: 14px;
+}
+
+.trash-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.trash-table th,
+.trash-table td {
+  padding: 18px;
+  border-bottom: 1px solid #293548;
+}
+
+.trash-table th {
+  color: #94a3b8;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.trash-table td {
+  font-size: 14px;
+}
+
+.trash-table td small {
+  display: block;
+  margin-top: 6px;
+  color: #94a3b8;
+}
+
+.trash-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.trash-actions button,
+.trash-refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.trash-restore {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.25) !important;
+}
+
+.trash-permanent {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.25) !important;
+}
+
+.trash-refresh {
+  background: #1e293b;
+  color: #f8fafc;
+}
+
+.trash-actions button:disabled,
+.trash-refresh:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.trash-access-denied {
+  padding: 40px;
+  color: #f87171;
+}
+
+@media (max-width: 768px) {
+  .trash-page {
+    padding: 16px;
+  }
+
+  .trash-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .trash-toolbar input {
+    width: 100%;
+  }
+
+  .trash-table {
+    min-width: 800px;
+  }
+}

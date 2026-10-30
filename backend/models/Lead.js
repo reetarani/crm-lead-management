@@ -38,6 +38,16 @@ const leadSchema = new mongoose.Schema(
       enum: ["New", "Contacted", "Qualified", "Converted", "Lost"],
       default: "New",
     },
+
+    // Soft delete fields
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

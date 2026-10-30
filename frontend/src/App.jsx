@@ -9,11 +9,15 @@ import {
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
+
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+
 import LeadsPage from "./features/leads/LeadsPage";
 import LeadFormPage from "./features/leads/LeadFormPage";
 import LeadDetailsPage from "./features/leads/LeadDetailsPage";
+import TrashPage from "./features/trash/TrashPage";
 
 function PublicRoute({ children }) {
   const { isInitializing, isAuthenticated } = useAuth();
@@ -51,6 +55,13 @@ function AppRoutes() {
         <Route path="/leads/new" element={<LeadFormPage />} />
         <Route path="/leads/:id/edit" element={<LeadFormPage />} />
         <Route path="/leads/:id" element={<LeadDetailsPage />} />
+
+        {/* Admin-only routes */}
+        <Route element={<AdminRoute />}>
+          <Route path="/trash" element={<TrashPage />} />
+        </Route>
+
+        {/* Future routes */}
         {/* <Route path="/follow-ups" element={<FollowUps />} /> */}
         {/* <Route path="/reports" element={<Reports />} /> */}
         {/* <Route path="/settings" element={<Settings />} /> */}

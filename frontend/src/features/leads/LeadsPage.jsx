@@ -97,8 +97,8 @@ useEffect(() => {
 
 const handleDelete = async (lead) => {
   const confirmed = window.confirm(
-    `Are you sure you want to delete "${lead.name}"? This action cannot be undone.`
-  );
+  `Are you sure you want to move "${lead.name}" to Trash? You can restore it later from the Trash.`
+);
 
   if (!confirmed) return;
 
@@ -109,9 +109,7 @@ const handleDelete = async (lead) => {
   try {
     await leadsService.remove(lead._id);
 
-    setDeleteSuccess(
-      `Lead "${lead.name}" deleted successfully.`
-    );
+    setDeleteSuccess(`Lead "${lead.name}" moved to Trash successfully.`);
 
     await loadLeads();
   } catch (err) {
