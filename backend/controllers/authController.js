@@ -216,12 +216,6 @@ export const login = async (req, res) => {
 
   export const refresh = async (req, res) => {
   try {
-    console.log("REFRESH COOKIE DEBUG:", {
-      cookieHeaderReceived: Boolean(req.headers.cookie),
-      cookiesAvailable: Boolean(req.cookies),
-      parsedCookieNames: Object.keys(req.cookies || {}),
-      refreshCookieReceived: Boolean(req.cookies?.[COOKIE_NAME]),
-    });
 
     const refreshToken = req.cookies?.[COOKIE_NAME];
 

@@ -9,6 +9,8 @@ import connectDB from "./config/db.js";
 import leadRoutes from "./routes/leadRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import { authenticate } from "./middleware/authMiddleware.js";
+import userRoutes from "./routes/userRoutes.js";
+import passwordResetRoutes from "./routes/passwordResetRoutes.js";
 
 dotenv.config();
 
@@ -32,7 +34,8 @@ app.use(cookieParser());
 // API routes
 app.use("/api/leads", leadRoutes);
 app.use("/api/auth", authRoutes);
-
+app.use("/api/users", userRoutes);
+app.use("/api/password-reset", passwordResetRoutes);
 app.get("/api/auth/me", authenticate, (req, res) => {
   res.status(200).json({
     success: true,
