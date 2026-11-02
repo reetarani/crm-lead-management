@@ -86,6 +86,8 @@ export const forgotPassword = async (req, res) => {
 };
 
 // RESET PASSWORD
+
+// RESET PASSWORD
 export const resetPassword = async (req, res) => {
   try {
     const schema = z.object({
@@ -115,11 +117,12 @@ export const resetPassword = async (req, res) => {
 
     const tokenHash = hashToken(token);
 
+    // Find the user with a valid, unexpired reset token.
     const user = await User.findOne({
       passwordResetTokenHash: tokenHash,
       passwordResetExpiresAt: { $gt: new Date() },
       isActive: true,
-    }).select("+passwordResetTokenHash +passwordResetExpiresAt");
+    }).select("+password");
 
     if (!user) {
       return res.status(400).json({
@@ -128,42 +131,70 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    const passwordUser = await User.findById(user._id)
-      .select("+password");
-
+    // Prevent resetting to the same password.
     const samePassword = await bcrypt.compare(
       parsed.data.password,
-      passwordUser.password
+      user.password
     );
 
     if (samePassword) {
       return res.status(400).json({
         success: false,
-        message:
-          "New password must be different from your current password",
+        message: "New password must be different from your current password",
       });
     }
 
-    user.password = await bcrypt.hash(parsed.data.password, 12);
-    user.passwordChangedAt = new Date();
+    // Hash the new password before the atomic database operation.
+    const hashedPassword = await bcrypt.hash(
+      parsed.data.password,
+      12
+    );
 
-    // Invalidate existing access tokens.
-    user.tokenVersion += 1;
+    const now = new Date();
 
-    // Make reset token single-use.
-    user.passwordResetTokenHash = null;
-    user.passwordResetExpiresAt = null;
+    // Atomically consume the reset token and update the password.
+    // Only one concurrent request can match the still-valid token.
+    const updatedUser = await User.findOneAndUpdate(
+      {
+        _id: user._id,
+        passwordResetTokenHash: tokenHash,
+        passwordResetExpiresAt: { $gt: now },
+        isActive: true,
+      },
+      {
+        $set: {
+          password: hashedPassword,
+          passwordChangedAt: now,
+          passwordResetTokenHash: null,
+          passwordResetExpiresAt: null,
+        },
+        $inc: {
+          tokenVersion: 1,
+        },
+      },
+      {
+        returnDocument: "after",
+        runValidators: true,
+      }
+    );
 
-    await user.save();
+    // No document means the token was already consumed,
+    // expired or otherwise invalidated.
+    if (!updatedUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired password reset link",
+      });
+    }
 
     // Revoke all existing refresh sessions.
     await RefreshToken.updateMany(
       {
-        user: user._id,
+        user: updatedUser._id,
         revokedAt: null,
       },
       {
-        $set: { revokedAt: new Date() },
+        $set: { revokedAt: now },
       }
     );
 
@@ -180,3 +211,4 @@ export const resetPassword = async (req, res) => {
     });
   }
 };
+

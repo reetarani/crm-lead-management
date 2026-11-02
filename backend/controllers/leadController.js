@@ -1,43 +1,95 @@
 
 import Lead from "../models/Lead.js";
 import mongoose from "mongoose";
+import { z } from "zod";
+
+// Allowed values from Lead.js model.
+const leadSources = [
+  "Website",
+  "Referral",
+  "Social Media",
+  "Cold Call",
+  "Other",
+];
+
+const leadStatuses = [
+  "New",
+  "Contacted",
+  "Qualified",
+  "Converted",
+  "Lost",
+];
+
+// Reusable field validation.
+const nameSchema = z.string().trim().min(1).max(100);
+
+const emailSchema = z
+  .string()
+  .trim()
+  .email()
+  .max(254)
+  .transform((value) => value.toLowerCase());
+
+const phoneSchema = z
+  .string()
+  .trim()
+  .min(7)
+  .max(20)
+  .regex(
+    /^\+?[\d\s().-]+$/,
+    "Please provide a valid phone number"
+  );
+
+const companySchema = z.string().trim().max(100);
+
+const sourceSchema = z.enum(leadSources);
+const statusSchema = z.enum(leadStatuses);
+
+// CREATE validation.
+const createLeadSchema = z.object({
+  name: nameSchema,
+  email: emailSchema,
+  phone: phoneSchema,
+  company: companySchema.optional(),
+  source: sourceSchema.optional(),
+  status: statusSchema.optional(),
+}).strict();
+
+// UPDATE validation.
+const updateLeadSchema = z.object({
+  name: nameSchema.optional(),
+  email: emailSchema.optional(),
+  phone: phoneSchema.optional(),
+  company: companySchema.optional(),
+  source: sourceSchema.optional(),
+  status: statusSchema.optional(),
+}).strict();
+
+// Helper: Validate MongoDB ID.
+const isValidId = (id) => mongoose.isValidObjectId(id);
+
+// Helper: Handle Mongoose validation errors.
+const isValidationError = (error) =>
+  error.name === "ValidationError" ||
+  error.name === "CastError";
 
 // CREATE LEAD
 export const createLead = async (req, res) => {
   try {
-    const { name, email, phone, company, source, status } = req.body;
+    const parsed = createLeadSchema.safeParse(req.body);
 
-    if (
-      typeof name !== "string" ||
-      !name.trim() ||
-      typeof email !== "string" ||
-      !email.trim() ||
-      typeof phone !== "string" ||
-      !phone.trim()
-    ) {
+    if (!parsed.success) {
       return res.status(400).json({
         success: false,
-        message: "Name, email, and phone are required.",
+        message: "Invalid lead data",
+        errors: parsed.error.issues.map((issue) => ({
+          field: issue.path.join("."),
+          message: issue.message,
+        })),
       });
     }
 
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailPattern.test(email.trim())) {
-      return res.status(400).json({
-        success: false,
-        message: "Please provide a valid email address.",
-      });
-    }
-
-    const lead = await Lead.create({
-      name,
-      email,
-      phone,
-      company,
-      source,
-      status,
-    });
+    const lead = await Lead.create(parsed.data);
 
     return res.status(201).json({
       success: true,
@@ -45,10 +97,10 @@ export const createLead = async (req, res) => {
       data: lead,
     });
   } catch (error) {
-    if (error.name === "ValidationError" || error.name === "CastError") {
+    if (isValidationError(error)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid lead data.",
+        message: "Invalid lead data",
       });
     }
 
@@ -56,7 +108,7 @@ export const createLead = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Failed to create lead.",
+      message: "Failed to create lead",
     });
   }
 };
@@ -78,7 +130,7 @@ export const getLeads = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch leads.",
+      message: "Failed to fetch leads",
     });
   }
 };
@@ -88,7 +140,7 @@ export const getLeadById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!mongoose.isValidObjectId(id)) {
+    if (!isValidId(id)) {
       return res.status(400).json({
         success: false,
         message: "Invalid lead ID",
@@ -116,7 +168,7 @@ export const getLeadById = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch lead.",
+      message: "Failed to fetch lead",
     });
   }
 };
@@ -126,49 +178,33 @@ export const updateLead = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!mongoose.isValidObjectId(id)) {
+    if (!isValidId(id)) {
       return res.status(400).json({
         success: false,
         message: "Invalid lead ID",
       });
     }
 
-    const allowedFields = [
-      "name",
-      "email",
-      "phone",
-      "company",
-      "source",
-      "status",
-    ];
+    const parsed = updateLeadSchema.safeParse(req.body);
 
-    const updates = {};
-
-    for (const field of allowedFields) {
-      if (Object.hasOwn(req.body ?? {}, field)) {
-        updates[field] = req.body[field];
-      }
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid lead update data",
+        errors: parsed.error.issues.map((issue) => ({
+          field: issue.path.join("."),
+          message: issue.message,
+        })),
+      });
     }
+
+    const updates = parsed.data;
 
     if (Object.keys(updates).length === 0) {
       return res.status(400).json({
         success: false,
-        message: "No valid fields provided for update",
+        message: "Please provide at least one valid field to update",
       });
-    }
-
-    if (updates.email !== undefined) {
-      if (
-        typeof updates.email !== "string" ||
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(updates.email.trim())
-      ) {
-        return res.status(400).json({
-          success: false,
-          message: "Please provide a valid email address",
-        });
-      }
-
-      updates.email = updates.email.trim().toLowerCase();
     }
 
     const lead = await Lead.findOneAndUpdate(
@@ -176,9 +212,11 @@ export const updateLead = async (req, res) => {
         _id: id,
         isDeleted: { $ne: true },
       },
-      updates,
       {
-        new: true,
+        $set: updates,
+      },
+      {
+        returnDocument: "after",
         runValidators: true,
       }
     );
@@ -196,6 +234,13 @@ export const updateLead = async (req, res) => {
       data: lead,
     });
   } catch (error) {
+    if (isValidationError(error)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid lead update data",
+      });
+    }
+
     console.error("Update lead error:", error);
 
     return res.status(500).json({
@@ -205,12 +250,12 @@ export const updateLead = async (req, res) => {
   }
 };
 
-// STEP 1: TEMPORARY DELETE (MOVE TO TRASH)
+// TEMPORARY DELETE (MOVE TO TRASH)
 export const deleteLead = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!mongoose.isValidObjectId(id)) {
+    if (!isValidId(id)) {
       return res.status(400).json({
         success: false,
         message: "Invalid lead ID",
@@ -229,7 +274,7 @@ export const deleteLead = async (req, res) => {
         },
       },
       {
-        new: true,
+        returnDocument: "after",
       }
     );
 
@@ -255,7 +300,7 @@ export const deleteLead = async (req, res) => {
   }
 };
 
-// STEP 2: GET TRASH LEADS
+// GET TRASH LEADS
 export const getTrashLeads = async (req, res) => {
   try {
     const leads = await Lead.find({
@@ -282,7 +327,7 @@ export const restoreLead = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!mongoose.isValidObjectId(id)) {
+    if (!isValidId(id)) {
       return res.status(400).json({
         success: false,
         message: "Invalid lead ID",
@@ -301,7 +346,7 @@ export const restoreLead = async (req, res) => {
         },
       },
       {
-        new: true,
+        returnDocument: "after",
       }
     );
 
@@ -332,7 +377,7 @@ export const permanentlyDeleteLead = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!mongoose.isValidObjectId(id)) {
+    if (!isValidId(id)) {
       return res.status(400).json({
         success: false,
         message: "Invalid lead ID",
@@ -361,6 +406,80 @@ export const permanentlyDeleteLead = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to permanently delete lead",
+    });
+  }
+};
+
+// GET DASHBOARD STATISTICS
+export const getDashboardStats = async (req, res) => {
+  try {
+    const result = await Lead.aggregate([
+      {
+        $match: {
+          isDeleted: { $ne: true },
+        },
+      },
+      {
+        $facet: {
+          totalLeads: [
+            { $count: "count" },
+          ],
+          statusCounts: [
+            {
+              $group: {
+                _id: "$status",
+                count: { $sum: 1 },
+              },
+            },
+          ],
+          sourceCounts: [
+            {
+              $group: {
+                _id: "$source",
+                count: { $sum: 1 },
+              },
+            },
+            { $sort: { count: -1 } },
+          ],
+        },
+      },
+    ]);
+
+    const stats = result[0];
+
+    const statuses = [
+      "New",
+      "Contacted",
+      "Qualified",
+      "Converted",
+      "Lost",
+    ];
+
+    const statusCounts = statuses.map((status) => ({
+      status,
+      count:
+        stats.statusCounts.find((item) => item._id === status)?.count || 0,
+    }));
+
+    const sourceCounts = stats.sourceCounts.map((item) => ({
+      source: item._id,
+      count: item.count,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        totalLeads: stats.totalLeads[0]?.count || 0,
+        statusCounts,
+        sourceCounts,
+      },
+    });
+  } catch (error) {
+    console.error("Dashboard stats error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch dashboard statistics",
     });
   }
 };

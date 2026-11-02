@@ -1,4 +1,3 @@
-
 import {
   Users,
   UserPlus,
@@ -7,16 +6,27 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-import useDashboardStats from "../hooks/useDashboardStats";
+export default function DashboardStats({ statsData }) {
+  const totalLeads = statsData?.totalLeads || 0;
 
-export default function DashboardStats({ leads = [] }) {
-  const {
-    totalLeads,
-    newLeads,
-    convertedLeads,
-    otherLeads,
-    conversionRate,
-  } = useDashboardStats(leads);
+  const getCount = (status) =>
+    statsData?.statusCounts?.find(
+      (item) => item.status === status
+    )?.count || 0;
+
+  const newLeads = getCount("New");
+  const contactedLeads = getCount("Contacted");
+  const qualifiedLeads = getCount("Qualified");
+  const convertedLeads = getCount("Converted");
+  const lostLeads = getCount("Lost");
+
+  const otherLeads =
+    contactedLeads + qualifiedLeads + lostLeads;
+
+  const conversionRate =
+    totalLeads > 0
+      ? (convertedLeads / totalLeads) * 100
+      : 0;
 
   const stats = [
     {
@@ -24,7 +34,7 @@ export default function DashboardStats({ leads = [] }) {
       value: totalLeads,
       icon: Users,
       color: "purple",
-      note: "All recorded leads",
+      note: "All active leads",
     },
     {
       label: "New leads",

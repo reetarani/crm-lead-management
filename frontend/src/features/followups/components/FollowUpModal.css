@@ -1,0 +1,161 @@
+
+.followup-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.followup-form-group label {
+  color: #e5e7eb;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.followup-form-group select,
+.followup-form-group textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #293548;
+  border-radius: 12px;
+  background: #101827;
+  color: #f9fafb;
+  font-size: 15px;
+  outline: none;
+}
+
+.followup-form-group select:focus,
+.followup-form-group textarea:focus {
+  border-color: #8067ff;
+}
+
+.followup-form-group select:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.followup-form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.followup-form-group small {
+  color: #f59e0b;
+  font-size: 12px;
+}
+
+/* Date and time field */
+
+.followup-datetime-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 0 14px;
+  border: 1px solid #374151;
+  border-radius: 12px;
+  background: #101827;
+  color: #9ca3af;
+}
+
+.followup-datetime-wrapper:focus-within {
+  border-color: #8067ff;
+}
+
+.followup-calendar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+}
+
+.followup-calendar-btn:hover {
+  color: #8067ff;
+}
+
+.followup-datetime-wrapper input[type="datetime-local"] {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  padding: 15px 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #ffffff;
+  color-scheme: dark;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.followup-datetime-wrapper input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(1);
+  opacity: 1;
+  width: 18px;
+  height: 18px;
+}
+
+/* Error message */
+
+.followup-form-error {
+  margin: 10px 0;
+  color: #f87171;
+  font-size: 13px;
+}
+
+/* Modal buttons */
+
+.followup-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 14px;
+  margin-top: 30px;
+}
+
+.followup-cancel-btn,
+.followup-submit-btn {
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.followup-cancel-btn {
+  border: 1px solid #293548;
+  background: transparent;
+  color: #d1d5db;
+}
+
+.followup-submit-btn {
+  border: none;
+  background: #8067ff;
+  color: #ffffff;
+}
+
+.followup-submit-btn:hover {
+  background: #7055f5;
+}
+
+.followup-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .followup-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .followup-cancel-btn,
+  .followup-submit-btn {
+    width: 100%;
+  }
+}

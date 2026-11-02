@@ -23,6 +23,8 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "Password is required"],
+      minlength: 8,
+      maxlength: 72,
       select: false,
     },
 
@@ -37,13 +39,14 @@ const userSchema = new mongoose.Schema(
       default: true,
     },
 
-    // Increment to invalidate existing access tokens
+    // Increment to invalidate existing access tokens.
     tokenVersion: {
       type: Number,
       default: 0,
+      min: 0,
     },
 
-    // Password reset fields
+    // Password reset fields.
     passwordResetTokenHash: {
       type: String,
       default: null,

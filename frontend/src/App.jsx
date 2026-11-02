@@ -22,6 +22,7 @@ import UsersPage from "./features/users/UsersPage";
 import ProfilePage from "./features/profile/ProfilePage";
 import ForgotPassword from "./features/auth/ForgotPassword";
 import ResetPassword from "./features/auth/ResetPassword";
+import FollowUpsPage from "./features/followups/FollowUpsPage";
 
 function PublicRoute({ children }) {
   const { isInitializing, isAuthenticated } = useAuth();
@@ -65,17 +66,13 @@ function AppRoutes() {
         <Route path="/leads/:id/edit" element={<LeadFormPage />} />
         <Route path="/leads/:id" element={<LeadDetailsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/follow-ups" element={<FollowUpsPage />} />
 
         {/* Admin-only routes */}
         <Route element={<AdminRoute />}>
           <Route path="/trash" element={<TrashPage />} />
           <Route path="/users" element={<UsersPage />} />
         </Route>
-
-        {/* Future routes */}
-        {/* <Route path="/follow-ups" element={<FollowUps />} /> */}
-        {/* <Route path="/reports" element={<Reports />} /> */}
-        {/* <Route path="/settings" element={<Settings />} /> */}
       </Route>
 
       <Route

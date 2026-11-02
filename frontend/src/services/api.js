@@ -13,6 +13,8 @@ const api = axios.create({
 
 // Access token exists only in application memory.
 let accessToken = null;
+
+// Share one refresh request between simultaneous API failures.
 let refreshPromise = null;
 
 export const setAccessToken = (token) => {
@@ -21,6 +23,7 @@ export const setAccessToken = (token) => {
 
 api.interceptors.request.use((config) => {
   if (accessToken) {
+    config.headers = config.headers || {};
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
 
@@ -29,6 +32,7 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => response,
+
   async (error) => {
     const originalRequest = error.config;
 
@@ -39,7 +43,8 @@ api.interceptors.response.use(
       originalRequest.url?.includes("/auth/login") ||
       originalRequest.url?.includes("/auth/register") ||
       originalRequest.url?.includes("/auth/refresh") ||
-      originalRequest.url?.includes("/auth/logout")
+      originalRequest.url?.includes("/auth/logout") ||
+      originalRequest.url?.includes("/password-reset/")
     ) {
       return Promise.reject(error);
     }
@@ -47,22 +52,30 @@ api.interceptors.response.use(
     originalRequest._retry = true;
 
     try {
-      // Share one refresh request between simultaneous failed requests.
+      // Create only one refresh request.
       if (!refreshPromise) {
         refreshPromise = axios
           .post(
             `${BASE_URL}/auth/refresh`,
             {},
-            { withCredentials: true }
+            {
+              withCredentials: true,
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
           )
           .then((response) => {
             const newToken = response.data?.token;
 
             if (!newToken) {
-              throw new Error("Refresh response did not contain a token");
+              throw new Error(
+                "Refresh response did not contain an access token"
+              );
             }
 
             setAccessToken(newToken);
+
             return newToken;
           })
           .finally(() => {

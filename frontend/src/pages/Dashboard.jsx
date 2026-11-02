@@ -1,24 +1,28 @@
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogOut } from "lucide-react";
 
 import "./Dashboard.css";
 import Topbar from "../components/layout/Topbar";
 import useLeads from "../features/leads/hooks/useLeads";
 import DashboardStats from "../features/dashboard/components/DashboardStats";
 import RecentLeadsTable from "../features/dashboard/components/RecentLeadsTable";
+import dashboardService from "../features/dashboard/services/dashboardService";
+import DashboardCharts from "../features/dashboard/components/DashboardCharts";
 
 import { useAuth } from "../context/AuthContext";
 import Sidebar from "../components/Sidebar";
 import PageHeader from "../components/layout/PageHeader";
-import Button from "../components/ui/Button";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  // Lead data and API state
+  const [statsData, setStatsData] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState("");
+
+  // Existing lead data and API state
   const {
     leads,
     loading,
@@ -26,7 +30,32 @@ export default function Dashboard() {
     fetchLeads,
   } = useLeads();
 
-  // Fetch leads and handle expired authentication
+  // Fetch dashboard statistics
+  const loadDashboardStats = useCallback(async () => {
+    try {
+      setStatsLoading(true);
+      setStatsError("");
+
+      const response = await dashboardService.getStats();
+
+      setStatsData(response.data);
+    } catch (err) {
+      if (err.response?.status === 401) {
+        logout();
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      setStatsError(
+        err.response?.data?.message ||
+        "Failed to load dashboard statistics"
+      );
+    } finally {
+      setStatsLoading(false);
+    }
+  }, [logout, navigate]);
+
+  // Fetch existing leads
   const loadLeads = useCallback(async () => {
     try {
       await fetchLeads();
@@ -38,27 +67,27 @@ export default function Dashboard() {
     }
   }, [fetchLeads, logout, navigate]);
 
-  // Load leads when the dashboard mounts
-  useEffect(() => {
-    loadLeads();
-  }, [loadLeads]);
+  // Refresh both dashboard statistics and recent leads
+  const loadDashboardData = useCallback(async () => {
+    await Promise.all([
+      loadLeads(),
+      loadDashboardStats(),
+    ]);
+  }, [loadLeads, loadDashboardStats]);
 
-  // Logout
-  const handleLogout = () => {
-    logout();
-    navigate("/login", { replace: true });
-  };
+  // Load dashboard data when component mounts
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
 
   return (
     <div className="crm-layout">
       <Sidebar />
 
       <main className="main-content">
-        {/* Top navigation */}
         <Topbar breadcrumb="Workspace / Dashboard" />
 
         <section className="page-content">
-          {/* Dashboard heading */}
           <PageHeader
             eyebrow="OVERVIEW"
             title="Dashboard"
@@ -67,15 +96,29 @@ export default function Dashboard() {
             }. Here's your CRM overview.`}
           />
 
-          {/* Dashboard statistics */}
-          <DashboardStats leads={leads} />
+          {/* Dashboard statistics from backend API */}
+          {statsError && (
+            <p className="error-message" role="alert">
+              {statsError}
+            </p>
+          )}
 
-          {/* Recent leads table with search and filters */}
+          {statsLoading && !statsData ? (
+            <p>Loading dashboard statistics...</p>
+          ) : (
+            <>
+            <DashboardStats statsData={statsData} />
+            <DashboardCharts statsData={statsData} />
+            </>
+            
+          )}
+
+          {/* Existing Recent Leads table */}
           <RecentLeadsTable
             leads={leads}
             loading={loading}
             error={error}
-            onRefresh={loadLeads}
+            onRefresh={loadDashboardData}
           />
         </section>
       </main>

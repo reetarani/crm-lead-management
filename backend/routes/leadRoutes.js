@@ -1,4 +1,3 @@
-
 import express from "express";
 
 import {
@@ -10,6 +9,7 @@ import {
   getTrashLeads,
   restoreLead,
   permanentlyDeleteLead,
+  getDashboardStats,
 } from "../controllers/leadController.js";
 
 import {
@@ -21,6 +21,13 @@ const router = express.Router();
 
 // All lead routes require a valid JWT.
 router.use(authenticate);
+
+// Dashboard statistics: Admin and Staff
+router.get(
+  "/dashboard-stats",
+  authorize("admin", "staff"),
+  getDashboardStats
+);
 
 // Active leads: Admin and Staff
 router.get("/", authorize("admin", "staff"), getLeads);
