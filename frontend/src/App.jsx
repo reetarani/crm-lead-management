@@ -18,6 +18,10 @@ import LeadsPage from "./features/leads/LeadsPage";
 import LeadFormPage from "./features/leads/LeadFormPage";
 import LeadDetailsPage from "./features/leads/LeadDetailsPage";
 import TrashPage from "./features/trash/TrashPage";
+import UsersPage from "./features/users/UsersPage";
+import ProfilePage from "./features/profile/ProfilePage";
+import ForgotPassword from "./features/auth/ForgotPassword";
+import ResetPassword from "./features/auth/ResetPassword";
 
 function PublicRoute({ children }) {
   const { isInitializing, isAuthenticated } = useAuth();
@@ -48,6 +52,11 @@ function AppRoutes() {
           </PublicRoute>
         }
       />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route
+        path="/reset-password/:token"
+        element={<ResetPassword />}
+      />
 
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<Dashboard />} />
@@ -55,10 +64,12 @@ function AppRoutes() {
         <Route path="/leads/new" element={<LeadFormPage />} />
         <Route path="/leads/:id/edit" element={<LeadFormPage />} />
         <Route path="/leads/:id" element={<LeadDetailsPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
 
         {/* Admin-only routes */}
         <Route element={<AdminRoute />}>
           <Route path="/trash" element={<TrashPage />} />
+          <Route path="/users" element={<UsersPage />} />
         </Route>
 
         {/* Future routes */}
@@ -72,6 +83,7 @@ function AppRoutes() {
         element={<Navigate to="/dashboard" replace />}
       />
     </Routes>
+    
   );
 }
 

@@ -1,5 +1,6 @@
 
 import { NavLink } from "react-router-dom";
+import { UserRound } from "lucide-react";
 import {
   LayoutDashboard,
   Users,
@@ -9,6 +10,7 @@ import {
   Layers,
   Trash2,
 } from "lucide-react";
+import { UserCircle } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
 import "./Sidebar.css";
@@ -22,14 +24,22 @@ const links = [
 ];
 
 export default function Sidebar() {
-  const { user } = useAuth();
+  const { user } = useAuth(); // Add this line
 
   const visibleLinks = [
-    ...links,
-    ...(user?.role === "admin"
-      ? [{ to: "/trash", label: "Trash", icon: Trash2 }]
-      : []),
-  ];
+  ...links,
+
+  // Both Admin and Staff can access My Profile
+  { to: "/profile", label: "My Profile", icon: UserCircle },
+
+  // Admin-only links
+  ...(user?.role === "admin"
+    ? [
+        { to: "/trash", label: "Trash", icon: Trash2 },
+        { to: "/users", label: "Users", icon: UserRound },
+      ]
+    : []),
+];
 
   return (
     <aside className="sidebar">

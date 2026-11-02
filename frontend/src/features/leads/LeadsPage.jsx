@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Plus, RefreshCw, LogOut, Pencil, Eye, Trash2, } from "lucide-react";
 import useLeads from "./hooks/useLeads";
 import { useAuth } from "../../context/AuthContext";
+import Topbar from "../../components/layout/Topbar";
 import Sidebar from "../../components/Sidebar";
 import PageHeader from "../../components/layout/PageHeader";
 import SearchInput from "../../components/ui/SearchInput";
@@ -145,34 +146,7 @@ const handleDelete = async (lead) => {
       <Sidebar />
 
       <main className="main-content">
-        <header className="topbar">
-          <div className="breadcrumb">
-            Workspace / Leads
-          </div>
-
-          <div className="topbar-user">
-            <div className="user-avatar">
-              {(user?.username || "U")
-                .charAt(0)
-                .toUpperCase()}
-            </div>
-
-            <div className="user-info">
-              <strong>{user?.username || "User"}</strong>
-              <span>{user?.role || "Staff"}</span>
-            </div>
-
-            <button
-              type="button"
-              className="icon-button"
-              onClick={handleLogout}
-              aria-label="Logout"
-              title="Logout"
-            >
-              <LogOut size={18} />
-            </button>
-          </div>
-        </header>
+        <Topbar breadcrumb="Workspace / Leads" />
 
         <section className="page-content">
           <PageHeader

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 
 import "./Dashboard.css";
-
+import Topbar from "../components/layout/Topbar";
 import useLeads from "../features/leads/hooks/useLeads";
 import DashboardStats from "../features/dashboard/components/DashboardStats";
 import RecentLeadsTable from "../features/dashboard/components/RecentLeadsTable";
@@ -55,34 +55,7 @@ export default function Dashboard() {
 
       <main className="main-content">
         {/* Top navigation */}
-        <header className="topbar">
-          <div className="breadcrumb">
-            Workspace / Dashboard
-          </div>
-
-          <div className="topbar-user">
-            <div className="user-avatar">
-              {(user?.username || "U")
-                .charAt(0)
-                .toUpperCase()}
-            </div>
-
-            <div className="user-info">
-              <strong>{user?.username || "User"}</strong>
-              <span>{user?.role || "Staff"}</span>
-            </div>
-
-            <button
-              type="button"
-              className="icon-button"
-              title="Logout"
-              aria-label="Logout"
-              onClick={handleLogout}
-            >
-              <LogOut size={18} />
-            </button>
-          </div>
-        </header>
+        <Topbar breadcrumb="Workspace / Dashboard" />
 
         <section className="page-content">
           {/* Dashboard heading */}
